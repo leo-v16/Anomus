@@ -43,7 +43,7 @@ ArticleRouter.post('/view', async (req, res) => {
 ArticleRouter.get('/viewall', async (req, res) => {
     try {
         const postList = await ArticleModel.find().sort({upvotes: -1})
-        const result = await UserModel.find({username: req.body.username}, {_id: 0, upvotes: 1, downvote: 1})
+        const result = await UserModel.find({username: req.body.username}, {_id: 0, upvotes: 1, downvotes: 1})
         if (!result) {
             return res.json({message: 'Something Wrong with User'})
         }
