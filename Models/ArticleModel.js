@@ -38,6 +38,14 @@ const AricleSchmea = mongoose.Schema(
         comment: {
             type: [CommentSchmea],
             required: false
+        },
+        tags: {
+            type: [String],
+            required: false
+        },
+        searchTags: {
+            type: [String],
+            required: false
         }
     },
     {

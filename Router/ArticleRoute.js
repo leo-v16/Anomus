@@ -19,6 +19,7 @@ function verifyToken(token, username) {
 }
 
 ArticleRouter.post('/view', async (req, res) => {
+    console.log('CALLED VIEW -> VIEW')
     try {
         const articleId = req.body.articleId
 
@@ -32,21 +33,35 @@ ArticleRouter.post('/view', async (req, res) => {
         if (!$article) {
             return res.json({message: 'Article not Found'})
         }
+        const result = await UserModel.findOne({username: req.body.username},  {_id: 0, upvotes: 1, downvotes: 1})
+        // console.log(result)
 
-        return res.status(200).json({message: 'Article Found', article: $article})
+        return res.status(200).json({message: 'Article Found', article: $article, voteList: result})
 
     } catch (error) {
         return res.json({message: error.message})
     }
 })
 
-ArticleRouter.get('/viewall', async (req, res) => {
+ArticleRouter.post('/search', async (req, res) => {
+    try {
+        const searchTags = req.body.searchTags.map((tag) => tag.toLowerCase())
+        const searchList = await ArticleModel.find({searchTags: {$in: searchTags}}).sort({upvotes: -1})
+        return res.json({postList: searchList})
+    } catch (error) {
+        return res.json({message: error.message})
+    }
+})
+
+ArticleRouter.post('/viewall', async (req, res) => {
+    console.log('CALLED VIEWALL -> HOME')
     try {
         const postList = await ArticleModel.find().sort({upvotes: -1})
-        const result = await UserModel.find({username: req.body.username}, {_id: 0, upvotes: 1, downvotes: 1})
-        // if (!result) {
-        //     return res.json({message: 'Something Wrong with User'})
-        // }
+        const result = await UserModel.findOne({username: req.body.username},  {_id: 0, upvotes: 1, downvotes: 1})
+        // console.log(result)
+        if (!result) {
+            return res.json({message: 'Something Wrong with User'})
+        }
         return res.json({postList: postList, voteList: result})
     } catch (error) {
         return res.json({message: error.message})
@@ -59,7 +74,8 @@ ArticleRouter.post('/create', async (req, res) => {
             !req.body.title ||
             !req.body.textData ||
             !req.body.username ||
-            !req.body.token
+            !req.body.token ||
+            !req.body.tags
         ) {
             return res.json({message: 'Incomplete Request'})
         }
@@ -70,12 +86,17 @@ ArticleRouter.post('/create', async (req, res) => {
             return res.json({message: error.message})
         }
 
+        const searchTags = req.body.tags.map((tag) => tag.toLowerCase())
+
         const newArctile = {
             title: req.body.title,
             textData: req.body.textData,
             username: req.body.username,
             upvotes: 0,
-            downvotes: 0
+            downvotes: 0,
+            tags: req.body.tags,
+            searchTags: searchTags
+            
         }
 
         const crearted = await ArticleModel.create(newArctile)
