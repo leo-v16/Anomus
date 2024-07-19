@@ -95,7 +95,7 @@ ArticleRouter.post('/create', async (req, res) => {
             upvotes: 0,
             downvotes: 0,
             tags: req.body.tags,
-            searchTags: searchTags
+            searchTags: [...searchTags, req.body.title]
             
         }
 
